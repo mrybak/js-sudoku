@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>QUnit</title>
+<link rel="stylesheet"
+	href="http://code.jquery.com/qunit/qunit-1.11.0.css">
+<script type="text/javascript" src="jquery.js"></script>
+<script type="text/javascript" src="boards.js"></script>
+<script type="text/javascript" src="sudoku.js"></script>
+<script type="text/javascript"
+	src="http://code.jquery.com/qunit/qunit-1.11.0.js"></script>
+
+</head>
+<body>
+	<div id="qunit">
+		<div id="qunit-fixture">
+			<script type="text/javascript">
+				
+				/*
+				 * Checking out qUnit features.
+				 */
+				
+				module("Loading board", {
+					setup: function() {
+						Sudoku.init();
+					}
+				});
+				test("Unsolved board is not accepted", function() {
+					Sudoku.loadBoard("020730001009010047000208900000600802207853406804007000003405000640080700100072090", "020730001009010047000208900000600802207853406804007000003405000640080700100072090", "426739581389516247715248963531694872297853416864127359973465128642981735158372694")
+					equal(Sudoku.isCorrect(), false);
+				});
+				test("Solved board is accepted", function() {
+					Sudoku.loadBoard("020730001009010047000208900000600802207853406804007000003405000640080700100072090", "426739581389516247715248963531694872297853416864127359973465128642981735158372694", "426739581389516247715248963531694872297853416864127359973465128642981735158372694")
+					ok(Sudoku.isCorrect());
+				});
+				
+				
+				
+				module("Undo/redo", {
+					setup: function() {
+						Sudoku.init();
+						Sudoku.loadBoard("020730001009010047000208900000600802207853406804007000003405000640080700100072090", "020730001009010047000208900000600802207853406804007000003405000640080700100072090", "426739581389516247715248963531694872297853416864127359973465128642981735158372694")
+					}
+				});
+				test("Undo button is disabled on start", function() {
+					ok($('#undo').hasClass("disabled"));
+				});
+				test("Redo button is disabled on start", function() {
+					ok($('#redo').hasClass("disabled"));
+				});	
+				
+			</script>
+		</div>
+	</div>
+	
+	<div id="board">You have to enable Javascript in order to play.</div>
+	<br />
+	<div id="buttons">
+		<button id="checker">Check</button>
+		<button id="undo">Undo</button>
+		<button id="redo">Redo</button>
+	</div>
+	
+</body>
+</html>
