@@ -48,5 +48,5 @@ td input {
 }
 
 button.disabled {
-	display: none;
+	color: #999999;
 }
