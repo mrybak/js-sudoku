@@ -16,6 +16,7 @@ var Sudoku = (function() {
 	var initialBoard = "";  // initial contents of board
 	var currentBoard = "";	// current contents of board
 	var solvedBoard = "";	
+	var lastFocusId = "";        // id of parent of last focused input (@see hint() )
 	var history = new Array();
 	var undoBuffer = new Array(); // hold undone operations
 	
@@ -112,30 +113,40 @@ var Sudoku = (function() {
 	}
 	
 	function undo() {
-		if(history.length > 0) {
-			var previousState = history.pop();
-			if (history.length == 0) {
-				$('#undo').addClass('disabled');
+		if(!($('#undo').hasClass('disabled'))) {
+			if(history.length > 0) {
+				var previousState = history.pop();
+				if (history.length == 0) {
+					$('#undo').addClass('disabled');
+				}
+				undoBuffer.push(currentBoard);
+				loadBoard(initialBoard, previousState, solvedBoard);
 			}
-			undoBuffer.push(currentBoard);
-			loadBoard(initialBoard, previousState, solvedBoard);
+			$('#redo').removeClass('disabled');	
 		}
-		$('#redo').removeClass('disabled');	
 	}
 	
 	function redo() {
-		// TODO: FIX
-		if(undoBuffer.length > 0) {
-			var nextState = undoBuffer.pop();
-			if (undoBuffer.length == 0) {
-				$('#redo').addClass('disabled');
+		if(!($('#redo').hasClass('disabled'))) {
+			if(undoBuffer.length > 0) {
+				var nextState = undoBuffer.pop();
+				if (undoBuffer.length == 0) {
+					$('#redo').addClass('disabled');
+				}
+				history.push(currentBoard);
+				loadBoard(initialBoard, nextState, solvedBoard);			
 			}
-			history.push(currentBoard);
-			loadBoard(initialBoard, nextState, solvedBoard);			
+			$('#undo').removeClass('disabled');	
 		}
-		$('#undo').removeClass('disabled');	
 	}
 		
+	function hint() {
+		if(!($('#hint').hasClass('disabled'))) {
+			var activeFieldIndex = lastFocusId.slice(6);
+			$('#' + lastFocusId + ' input').val(solvedBoard[activeFieldIndex]);
+			updateState(activeFieldIndex);				
+		}
+	}
 		
 	/* PUBLIC METHODS */
 	
@@ -146,6 +157,7 @@ var Sudoku = (function() {
 		$('#' + config.buttonsContainerId).show();
 				
 		// bind events
+		// should be in separate function
 		$('#checker').click(function() {
 			alert(isCorrect() ? config.successMessage : config.failureMessage);
 		});
@@ -155,9 +167,21 @@ var Sudoku = (function() {
 		$('#redo').addClass('disabled').click(function() {
 			redo();
 		});
+		$('#hint').addClass('disabled').mousedown(function() {
+			hint();
+		});
+		$(':not(#hint)').mouseup(function() {
+			if($('td input:focus').length == 0) {
+				
+				$('#hint').addClass('disabled');
+			}
+		});
 		$('td input')
-			.focus(function() {				
-				highlightFields($(this).parent().attr('id').slice(6));
+			.focus(function() {	
+				$('#hint').removeClass('disabled');
+				var parentId = $(this).parent().attr('id');
+				lastFocusId = parentId;
+				highlightFields(parentId.slice(6));
 			})
 			.blur(function() {
 				dimFields();
