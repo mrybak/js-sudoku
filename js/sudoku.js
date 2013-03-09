@@ -3,34 +3,37 @@
  * @author: kontakt@mrybak.pl
  */
 var Sudoku = (function() {
-	
-	/* DEFAULT CONFIGURATION */ 
+
+	/* DEFAULT CONFIGURATION */
 	var config = {
 		boardContainerId : "board",
 		buttonsContainerId : "buttons",
 		successMessage : "Correctomundo!",
 		failureMessage : "Sorry sir, you suck at this."
-	};		
-	
+	};
+
 	/* PRIVATE METHODS AND VARIABLES */
-	var initialBoard = "";  // initial contents of board
-	var currentBoard = "";	// current contents of board
-	var solvedBoard = "";	
-	var lastFocusId = "";        // id of parent of last focused input (@see hint() )
+	var initialBoard = ""; // initial contents of board
+	var currentBoard = ""; // current contents of board
+	var solvedBoard = "";
+	var lastFocusId = ""; // id of parent of last focused input (@see
+	// hint() )
 	var history = new Array();
 	var solvingTime = 0;
 	var timerActive = true;
 	var undoBuffer = new Array(); // hold undone operations
-	
+
 	/* Returns 9x9 table in which every field has its own id. */
 	function drawBoard() {
 		var board = '<table border="1">';
-		var fieldIndex; 
+		var fieldIndex;
 		for ( var rowIndex = 0; rowIndex < 9; rowIndex++) {
 			board += '<tr>';
 			for ( var colIndex = 0; colIndex < 9; colIndex++) {
 				fieldIndex = rowIndex * 9 + colIndex;
-				board += '<td id="field_' + fieldIndex + '" class="input"><input type="text" size="1" maxlength="1" /></td>';
+				board += '<td id="field_'
+						+ fieldIndex
+						+ '" class="input"><input type="text" size="1" maxlength="1" /></td>';
 			}
 			board += '</tr>';
 		}
@@ -38,7 +41,7 @@ var Sudoku = (function() {
 
 		return board;
 	}
-	
+
 	/* Fills table cells with numbers, regarding given board description. */
 	function fillBoard() {
 		for ( var rowIndex = 0; rowIndex < 9; rowIndex++) {
@@ -46,26 +49,29 @@ var Sudoku = (function() {
 				var fieldIndex = rowIndex * 9 + colIndex;
 				var fieldId = 'field_' + fieldIndex;
 				if (initialBoard[fieldIndex] > 0)
-					$('#' + fieldId).removeClass('input').html(initialBoard[fieldIndex]);
+					$('#' + fieldId).removeClass('input').html(
+							initialBoard[fieldIndex]);
 				else if (currentBoard[fieldIndex] > 0)
 					$('#' + fieldId + ' input').val(currentBoard[fieldIndex]);
-				else if (currentBoard[fieldIndex] == 0 && $('#' + fieldId + ' input').val() != "")
+				else if (currentBoard[fieldIndex] == 0
+						&& $('#' + fieldId + ' input').val() != "")
 					$('#' + fieldId + ' input').val("");
 			}
 		}
 	}
-	
+
 	function updateState(fieldIndex) {
 		var fieldId = 'field_' + fieldIndex;
 		var fieldValue = $('#' + fieldId + ' input').val();
 		if (fieldValue != currentBoard[fieldIndex] && fieldValue != '') {
 			history.push(currentBoard);
 			$('#undo').removeClass('disabled');
-			var updatedBoard = currentBoard.substr(0, fieldIndex) + fieldValue + currentBoard.substr(parseInt(fieldIndex) + 1);
-			currentBoard = updatedBoard;			
-		}			
+			var updatedBoard = currentBoard.substr(0, fieldIndex) + fieldValue
+					+ currentBoard.substr(parseInt(fieldIndex) + 1);
+			currentBoard = updatedBoard;
+		}
 	}
-	
+
 	function getColumn(fieldIndex) {
 		var indices = new Array();
 		var colIndex = fieldIndex % 9;
@@ -113,10 +119,10 @@ var Sudoku = (function() {
 	function dimFields() {
 		$('td').removeClass('highlighted');
 	}
-	
+
 	function undo() {
-		if(!($('#undo').hasClass('disabled'))) {
-			if(history.length > 0) {
+		if (!($('#undo').hasClass('disabled'))) {
+			if (history.length > 0) {
 				var previousState = history.pop();
 				if (history.length == 0) {
 					$('#undo').addClass('disabled');
@@ -124,73 +130,88 @@ var Sudoku = (function() {
 				undoBuffer.push(currentBoard);
 				loadBoard(initialBoard, previousState, solvedBoard);
 			}
-			$('#redo').removeClass('disabled');	
+			$('#redo').removeClass('disabled');
 		}
 		$('#' + lastFocusId + ' input').focus();
 	}
-	
+
 	function redo() {
-		if(!($('#redo').hasClass('disabled'))) {
-			if(undoBuffer.length > 0) {
+		if (!($('#redo').hasClass('disabled'))) {
+			if (undoBuffer.length > 0) {
 				var nextState = undoBuffer.pop();
 				if (undoBuffer.length == 0) {
 					$('#redo').addClass('disabled');
 				}
 				history.push(currentBoard);
-				loadBoard(initialBoard, nextState, solvedBoard);			
+				loadBoard(initialBoard, nextState, solvedBoard);
 			}
-			$('#undo').removeClass('disabled');	
+			$('#undo').removeClass('disabled');
 		}
 	}
-		
+
 	function hint() {
-		if(!($('#hint').hasClass('disabled'))) {
+		if (!($('#hint').hasClass('disabled'))) {
 			var activeFieldIndex = lastFocusId.slice(6);
 			$('#' + lastFocusId + ' input').val(solvedBoard[activeFieldIndex]);
-			updateState(activeFieldIndex);				
+			updateState(activeFieldIndex);
 		}
 	}
-	
+
+	function save() { // TODO: multiple cookies
+		var boardsJSON = {
+			"savedBoard" : [ {"initialBoard" : initialBoard, "currentBoard" : currentBoard, "solvedBoard" : solvedBoard} ]
+		};
+		setCookie("sudokuBoard", JSON.stringify(boardsJSON));
+		alert("game saved");
+	}
+
+	function load() {
+		var boardsJSON = JSON.parse(getCookie("sudokuBoard"));
+		init();
+		loadBoard(boardsJSON.savedBoard[0].initialBoard, boardsJSON.savedBoard[0].currentBoard, boardsJSON.savedBoard[0].solvedBoard);
+		alert("game loaded");
+	}
+
 	function pauseOrResume() {
-		if (timerActive) {   // pause
+		if (timerActive) { // pause
 			timerActive = false;
 			$('#' + config.boardContainerId).hide();
 			$('#pause').html("Resume");
-		}
-		else { // resume
+		} else { // resume
 			timerActive = true;
 			$('#' + config.boardContainerId).show();
 			$('#pause').html("Pause");
 		}
 	}
-	
+
 	// convert to m:ss format
 	function parseTime(seconds) {
-		return Math.floor(seconds/60) + ":" + ((seconds % 60) < 10 ? "0" : "") + (seconds % 60);
+		return Math.floor(seconds / 60) + ":"
+				+ ((seconds % 60) < 10 ? "0" : "") + (seconds % 60);
 	}
-	
-	function startTimer() {	
+
+	function startTimer() {
 		$('#timer').html("0:00");
 		setInterval(function() {
 			if (timerActive) {
 				$('#timer').html(parseTime(++solvingTime));
 			}
-		}, 1000);		
+		}, 1000);
 	}
-		
+
 	/* PUBLIC METHODS */
-	
+
 	function init(customConfig) {
 		// update configuration if custom configuration was supplied
 		$.extend(config, customConfig);
 		$('#' + config.boardContainerId).html(drawBoard());
 		$('#' + config.buttonsContainerId).show();
-		
+
 		// start timer
 		startTimer();
-		
+
 		// bind events
-		// should be in separate function		
+		// should be in separate function
 		$('#checker').click(function() {
 			alert(isCorrect() ? config.successMessage : config.failureMessage);
 		});
@@ -203,49 +224,51 @@ var Sudoku = (function() {
 		$('#hint').addClass('disabled').mousedown(function() {
 			hint();
 		});
+		$('#save').click(function() {
+			save();
+		});
+		$('#load').click(function() {
+			load();
+		});
 		$('#pause').click(function() {
 			pauseOrResume();
 		});
 		$(':not(#hint)').mouseup(function() {
-			if($('td input:focus').length == 0) {
-				
+			if ($('td input:focus').length == 0) {
 				$('#hint').addClass('disabled');
 			}
 		});
-		$('td input')
-			.focus(function() {	
-				$('#hint').removeClass('disabled');
-				var parentId = $(this).parent().attr('id');
-				lastFocusId = parentId;
-				highlightFields(parentId.slice(6));
-			})
-			.blur(function() {
-				dimFields();
-				updateState($(this).parent().attr('id').slice(6));
-			});
-		$('td').hover(function(){
+		$('td input').focus(function() {
+			$('#hint').removeClass('disabled');
+			var parentId = $(this).parent().attr('id');
+			lastFocusId = parentId;
+			highlightFields(parentId.slice(6));
+		}).blur(function() {
+			dimFields();
+			updateState($(this).parent().attr('id').slice(6));
+		});
+		$('td').hover(function() {
 			$(this).addClass('hover');
-		},
-		function() {
+		}, function() {
 			$(this).removeClass('hover');
 		});
 	}
-	
-	function loadBoard(initialBoardDescription, currentBoardDescription, solvedBoardDescription) {
+
+	function loadBoard(initialBoardDescription, currentBoardDescription,
+			solvedBoardDescription) {
 		initialBoard = initialBoardDescription;
 		currentBoard = currentBoardDescription;
 		solvedBoard = solvedBoardDescription;
-		
+
 		// fill board using given board description
 		fillBoard();
 	}
-	
+
 	/* Checks if current board state is same with proper solution. */
 	function isCorrect() {
 		return currentBoard == solvedBoard;
 	}
-	
-	
+
 	/* Return public interface */
 	return {
 		init : init,
