@@ -18,6 +18,8 @@ var Sudoku = (function() {
 	var solvedBoard = "";	
 	var lastFocusId = "";        // id of parent of last focused input (@see hint() )
 	var history = new Array();
+	var solvingTime = 0;
+	var timerActive = true;
 	var undoBuffer = new Array(); // hold undone operations
 	
 	/* Returns 9x9 table in which every field has its own id. */
@@ -124,6 +126,7 @@ var Sudoku = (function() {
 			}
 			$('#redo').removeClass('disabled');	
 		}
+		$('#' + lastFocusId + ' input').focus();
 	}
 	
 	function redo() {
@@ -147,6 +150,33 @@ var Sudoku = (function() {
 			updateState(activeFieldIndex);				
 		}
 	}
+	
+	function pauseOrResume() {
+		if (timerActive) {   // pause
+			timerActive = false;
+			$('#' + config.boardContainerId).hide();
+			$('#pause').html("Resume");
+		}
+		else { // resume
+			timerActive = true;
+			$('#' + config.boardContainerId).show();
+			$('#pause').html("Pause");
+		}
+	}
+	
+	// convert to m:ss format
+	function parseTime(seconds) {
+		return Math.floor(seconds/60) + ":" + ((seconds % 60) < 10 ? "0" : "") + (seconds % 60);
+	}
+	
+	function startTimer() {	
+		$('#timer').html("0:00");
+		setInterval(function() {
+			if (timerActive) {
+				$('#timer').html(parseTime(++solvingTime));
+			}
+		}, 1000);		
+	}
 		
 	/* PUBLIC METHODS */
 	
@@ -155,9 +185,12 @@ var Sudoku = (function() {
 		$.extend(config, customConfig);
 		$('#' + config.boardContainerId).html(drawBoard());
 		$('#' + config.buttonsContainerId).show();
-				
+		
+		// start timer
+		startTimer();
+		
 		// bind events
-		// should be in separate function
+		// should be in separate function		
 		$('#checker').click(function() {
 			alert(isCorrect() ? config.successMessage : config.failureMessage);
 		});
@@ -169,6 +202,9 @@ var Sudoku = (function() {
 		});
 		$('#hint').addClass('disabled').mousedown(function() {
 			hint();
+		});
+		$('#pause').click(function() {
+			pauseOrResume();
 		});
 		$(':not(#hint)').mouseup(function() {
 			if($('td input:focus').length == 0) {
