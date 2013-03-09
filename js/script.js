@@ -1,8 +1,11 @@
 $(function() {
 	// Initialize application
+	
+	// difficulty levels here? 
 	Sudoku.init();
 	
 	// Load riddle
-	var boardNumber = Math.floor(Math.random()*10);
-	Sudoku.loadBoard(boards[0], boards[0], solutions[0]);
+	// var availableBoardsCount = // check length of certain array
+	var boardNumber = Math.floor(Math.random()*20);
+	Sudoku.loadBoard(boards.easy[boardNumber], boards.easy[boardNumber], solutions.easy[boardNumber]);
 });
