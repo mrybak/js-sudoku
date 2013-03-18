@@ -43,7 +43,7 @@ td input {
 	font-weight: normal;
 }
 
-#buttons {
+#board, #buttons {
 	display: none;
 }
 

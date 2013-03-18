@@ -6,10 +6,10 @@ var Sudoku = (function() {
 
 	/* DEFAULT CONFIGURATION */
 	var config = {
-		boardContainerId : "board",
-		buttonsContainerId : "buttons",
+		boardContainer : "#board",
+		buttonsContainer : "#buttons",
 		successMessage : "Correctomundo!",
-		failureMessage : "Sorry sir, you suck at this."
+		failureMessage : "Sorry sir, you suck at this."		
 	};
 
 	/* PRIVATE METHODS AND VARIABLES */
@@ -159,59 +159,51 @@ var Sudoku = (function() {
 
 	function save() { // TODO: multiple cookies
 		var boardsJSON = {
-			"savedBoard" : [ {"initialBoard" : initialBoard, "currentBoard" : currentBoard, "solvedBoard" : solvedBoard} ]
+				"initialBoard" : initialBoard,
+				"currentBoard" : currentBoard,
+				"solvedBoard" : solvedBoard,
+				"solvingTime" : solvingTime
 		};
 		setCookie("sudokuBoard", JSON.stringify(boardsJSON));
 		alert("game saved");
 	}
 
+	/* Loads saved game from cookie */
 	function load() {
 		var boardsJSON = JSON.parse(getCookie("sudokuBoard"));
-		init();
-		loadBoard(boardsJSON.savedBoard[0].initialBoard, boardsJSON.savedBoard[0].currentBoard, boardsJSON.savedBoard[0].solvedBoard);
+		showGame();
+		loadBoard(boardsJSON.initialBoard, boardsJSON.currentBoard, boardsJSON.solvedBoard, boardsJSON.solvingTime);
 		alert("game loaded");
 	}
 
-	function pauseOrResume() {
+	
+	function togglePauseState() {
 		if (timerActive) { // pause
 			timerActive = false;
-			$('#' + config.boardContainerId).hide();
+			$(config.boardContainer).hide();
 			$('#pause').html("Resume");
 		} else { // resume
 			timerActive = true;
-			$('#' + config.boardContainerId).show();
+			$(config.boardContainer).show();
 			$('#pause').html("Pause");
 		}
 	}
 
-	// convert to m:ss format
+	/* Converts number of seconds to m:ss format */
 	function parseTime(seconds) {
 		return Math.floor(seconds / 60) + ":"
 				+ ((seconds % 60) < 10 ? "0" : "") + (seconds % 60);
 	}
 
 	function startTimer() {
-		$('#timer').html("0:00");
 		setInterval(function() {
 			if (timerActive) {
 				$('#timer').html(parseTime(++solvingTime));
 			}
 		}, 1000);
 	}
-
-	/* PUBLIC METHODS */
-
-	function init(customConfig) {
-		// update configuration if custom configuration was supplied
-		$.extend(config, customConfig);
-		$('#' + config.boardContainerId).html(drawBoard());
-		$('#' + config.buttonsContainerId).show();
-
-		// start timer
-		startTimer();
-
-		// bind events
-		// should be in separate function
+	
+	function bindEvents() {
 		$('#checker').click(function() {
 			alert(isCorrect() ? config.successMessage : config.failureMessage);
 		});
@@ -231,7 +223,7 @@ var Sudoku = (function() {
 			load();
 		});
 		$('#pause').click(function() {
-			pauseOrResume();
+			togglePauseState();
 		});
 		$(':not(#hint)').mouseup(function() {
 			if ($('td input:focus').length == 0) {
@@ -253,13 +245,39 @@ var Sudoku = (function() {
 			$(this).removeClass('hover');
 		});
 	}
+	
+	// shows board and buttons
+	function showGame() {
+		$(config.boardContainer).show().html(drawBoard());
+		$(config.buttonsContainer).show();
+	}
+
+	/* PUBLIC METHODS */
+
+	function init(customConfig) {
+		// update configuration if custom configuration was supplied
+		$.extend(config, customConfig);
+		
+		// display board, buttons, timer etc.
+		showGame();
+		
+		// start timer
+		startTimer();
+
+		// bind events
+		bindEvents();		
+	}
 
 	function loadBoard(initialBoardDescription, currentBoardDescription,
-			solvedBoardDescription) {
+			solvedBoardDescription, initTime) {
 		initialBoard = initialBoardDescription;
 		currentBoard = currentBoardDescription;
 		solvedBoard = solvedBoardDescription;
 
+		// if no initTime was provided, solvingTime defaults to 0
+		solvingTime = initTime || 0;
+		$('#timer').html(parseTime(solvingTime));
+		
 		// fill board using given board description
 		fillBoard();
 	}
