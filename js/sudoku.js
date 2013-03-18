@@ -6,8 +6,9 @@ var Sudoku = (function() {
 
 	/* DEFAULT CONFIGURATION */
 	var config = {
-		boardContainer : "#board",
-		buttonsContainer : "#buttons",
+		boardContainer : ".board",
+		buttonsContainer : ".buttons",
+		timerContainer : ".timer",
 		successMessage : "Correctomundo!",
 		failureMessage : "Sorry sir, you suck at this."		
 	};
@@ -16,8 +17,7 @@ var Sudoku = (function() {
 	var initialBoard = ""; // initial contents of board
 	var currentBoard = ""; // current contents of board
 	var solvedBoard = "";
-	var lastFocusId = ""; // id of parent of last focused input (@see
-	// hint() )
+	var lastFocusId = ""; // id of parent of last focused input (@see hint() )
 	var history = new Array();
 	var solvingTime = 0;
 	var timerActive = true;
@@ -181,11 +181,11 @@ var Sudoku = (function() {
 		if (timerActive) { // pause
 			timerActive = false;
 			$(config.boardContainer).hide();
-			$('#pause').html("Resume");
+			$('#pause').html('<i class="icon-play"></i> Resume');
 		} else { // resume
 			timerActive = true;
 			$(config.boardContainer).show();
-			$('#pause').html("Pause");
+			$('#pause').html('<i class="icon-pause"></i> Pause');
 		}
 	}
 
@@ -198,7 +198,7 @@ var Sudoku = (function() {
 	function startTimer() {
 		setInterval(function() {
 			if (timerActive) {
-				$('#timer').html(parseTime(++solvingTime));
+				$(config.timerContainer).html(parseTime(++solvingTime));
 			}
 		}, 1000);
 	}
@@ -217,8 +217,10 @@ var Sudoku = (function() {
 			hint();
 		});
 		$('#save').click(function() {
+			$('#load').removeClass('disabled');
 			save();
 		});
+		if (!(getCookie("sudokuBoard"))) $('#load').addClass('disabled');
 		$('#load').click(function() {
 			load();
 		});
@@ -246,7 +248,7 @@ var Sudoku = (function() {
 		});
 	}
 	
-	// shows board and buttons
+	/* Shows board, buttons and timer */
 	function showGame() {
 		$(config.boardContainer).show().html(drawBoard());
 		$(config.buttonsContainer).show();
@@ -276,7 +278,7 @@ var Sudoku = (function() {
 
 		// if no initTime was provided, solvingTime defaults to 0
 		solvingTime = initTime || 0;
-		$('#timer').html(parseTime(solvingTime));
+		$(config.timerContainer).html(parseTime(solvingTime));
 		
 		// fill board using given board description
 		fillBoard();
