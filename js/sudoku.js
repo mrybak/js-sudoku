@@ -154,6 +154,8 @@ var Sudoku = (function() {
 			var activeFieldIndex = lastFocusId.slice(6);
 			$('#' + lastFocusId + ' input').val(solvedBoard[activeFieldIndex]);
 			updateState(activeFieldIndex);
+			solvingTime += 30;
+			$(config.timerContainer).fadeOut(200, function() { $(this).fadeIn(); }).html(parseTime(solvingTime));
 		}
 	}
 
@@ -180,11 +182,15 @@ var Sudoku = (function() {
 	function togglePauseState() {
 		if (timerActive) { // pause
 			timerActive = false;
-			$(config.boardContainer).hide();
+			$(config.boardContainer).slideUp(function() {
+				$(config.timerContainer).addClass('stopped');
+			});
 			$('#pause').html('<i class="icon-play"></i> Resume');
 		} else { // resume
 			timerActive = true;
-			$(config.boardContainer).show();
+			$(config.boardContainer).slideDown(function() {
+				$(config.timerContainer).removeClass('stopped');
+			});
 			$('#pause').html('<i class="icon-pause"></i> Pause');
 		}
 	}
@@ -250,6 +256,7 @@ var Sudoku = (function() {
 	
 	/* Shows board, buttons and timer */
 	function showGame() {
+		$(config.boardContainer).parent().show();
 		$(config.boardContainer).show().html(drawBoard());
 		$(config.buttonsContainer).show();
 	}
@@ -267,7 +274,7 @@ var Sudoku = (function() {
 		startTimer();
 
 		// bind events
-		bindEvents();		
+		bindEvents();	
 	}
 
 	function loadBoard(initialBoardDescription, currentBoardDescription,

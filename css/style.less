@@ -1,6 +1,14 @@
 /*variables */
 @pageWidth: 490px;
 
+/* mixins */
+.transition(@all, @ease) {
+	transition: all @all ease @ease;
+	-moz-transition:  all @all ease @ease; /* Firefox 4 */
+	-webkit-transition:  all @all ease @ease; /* Safari and Chrome */
+	-o-transition:  all @all ease @ease; /* Opera */
+}
+
 /* table styling */
 table {
 	border-collapse: collapse;
@@ -49,22 +57,31 @@ table {
 /* divs styling */
 .wrapper {
 	width: @pageWidth;
-	margin: 0 auto;
+	margin: 0 auto;	
+	padding-top: 30px;
+	.start_game {
+		text-align: center;
+		padding-top: 0;
+	}
 	.board_wrapper {
+		display: none;
+		float: left;
 		.board {
 			display: none;
-			margin: 15px 0 0 3px;
+			float: left;
+			margin: 0 0 0 3px;
 			background: #ffffff;		
 		}	
 		.buttons {
-			witdh: 100%;
+			width: 100%;
 			text-align: center;
+			float: left;
 		}
 		.buttons.bottom {
 			margin-top: 15px;
 		}
 		.buttons.top {
-			margin-top: 15px;
+			margin: 15px 0;
 			button {
 			margin-top: -13px;
 		 }
@@ -74,6 +91,10 @@ table {
 			font-size: 30px;
 			margin: 0 20px 10px;
 			color: #2b2b2b;
+			.transition(0.3s, 0);			
+		}
+		.timer.stopped {
+			color: #999;
 		}
 	}
 	.buttons {
