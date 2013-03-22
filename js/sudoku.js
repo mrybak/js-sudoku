@@ -19,10 +19,10 @@ var Sudoku = (function() {
 	var currentBoard = ""; // current contents of board
 	var solvedBoard = "";
 	var lastFocusId = ""; // id of parent of last focused input (@see hint() )
-	var history = new Array();
+	var history = [];
 	var solvingTime = 0;
 	var timerActive = true;
-	var undoBuffer = new Array(); // hold undone operations
+	var undoBuffer = []; // hold undone operations
 
 	/* Returns 9x9 table in which every field has its own id. */
 	function drawBoard() {
@@ -32,9 +32,7 @@ var Sudoku = (function() {
 			board += '<tr>';
 			for ( var colIndex = 0; colIndex < 9; colIndex++) {
 				fieldIndex = rowIndex * 9 + colIndex;
-				board += '<td id="field_'
-						+ fieldIndex
-						+ '" class="input"><input type="text" size="1" maxlength="1" /></td>';
+				board += '<td id="field_' + fieldIndex	+ '" class="input"><input type="text" size="1" maxlength="1" /></td>';
 			}
 			board += '</tr>';
 		}
@@ -49,14 +47,15 @@ var Sudoku = (function() {
 			for ( var colIndex = 0; colIndex < 9; colIndex++) {
 				var fieldIndex = rowIndex * 9 + colIndex;
 				var fieldId = 'field_' + fieldIndex;
-				if (initialBoard[fieldIndex] > 0)
-					$('#' + fieldId).removeClass('input').html(
-							initialBoard[fieldIndex]);
-				else if (currentBoard[fieldIndex] > 0)
+				if (initialBoard[fieldIndex] > 0) {
+					$('#' + fieldId).removeClass('input').html(initialBoard[fieldIndex]);
+				}
+				else if (currentBoard[fieldIndex] > 0) {
 					$('#' + fieldId + ' input').val(currentBoard[fieldIndex]);
-				else if (currentBoard[fieldIndex] == 0
-						&& $('#' + fieldId + ' input').val() != "")
+				}
+				else if (currentBoard[fieldIndex] === '0'	&& $('#' + fieldId + ' input').val() !== "") {
 					$('#' + fieldId + ' input').val("");
+				}
 			}
 		}
 	}
@@ -64,17 +63,16 @@ var Sudoku = (function() {
 	function updateState(fieldIndex) {
 		var fieldId = 'field_' + fieldIndex;
 		var fieldValue = $('#' + fieldId + ' input').val();
-		if (fieldValue != currentBoard[fieldIndex] && fieldValue != '') {
+		if (fieldValue !== currentBoard[fieldIndex] && fieldValue !== "") {
 			history.push(currentBoard);
 			$('#undo').removeClass('disabled');
-			var updatedBoard = currentBoard.substr(0, fieldIndex) + fieldValue
-					+ currentBoard.substr(parseInt(fieldIndex) + 1);
+			var updatedBoard = currentBoard.substr(0, fieldIndex) + fieldValue	+ currentBoard.substr(parseInt(fieldIndex) + 1);
 			currentBoard = updatedBoard;
 		}
 	}
 
 	function getColumn(fieldIndex) {
-		var indices = new Array();
+		var indices = [];
 		var colIndex = fieldIndex % 9;
 		for ( var rowIndex = 0; rowIndex < 9; rowIndex++) {
 			indices.push(colIndex + (9 * rowIndex));
@@ -83,7 +81,7 @@ var Sudoku = (function() {
 	}
 
 	function getRow(fieldIndex) {
-		var indices = new Array();
+		var indices = [];
 		var rowIndex = Math.floor(fieldIndex / 9);
 		for ( var colIndex = 0; colIndex < 9; colIndex++) {
 			indices.push(colIndex + (9 * rowIndex));
@@ -92,7 +90,7 @@ var Sudoku = (function() {
 	}
 
 	function getSquare(fieldIndex) {
-		var indices = new Array();
+		var indices = [];
 		var sqRowIndex = Math.floor((fieldIndex % 9) / 3);
 		var sqColIndex = Math.floor(Math.floor(fieldIndex / 9) / 3);
 		for ( var x = 0; x < 3; x++) {
@@ -105,7 +103,7 @@ var Sudoku = (function() {
 
 	function highlight(fieldSet) {
 		for ( var fieldNumber = 0; fieldNumber < fieldSet.length; fieldNumber++) {
-			fieldIndex = fieldSet[fieldNumber];
+			var fieldIndex = fieldSet[fieldNumber];
 			var fieldId = 'field_' + fieldIndex;
 			$('#' + fieldId).addClass('highlighted');
 		}
@@ -125,7 +123,7 @@ var Sudoku = (function() {
 		if (!($('#undo').hasClass('disabled'))) {
 			if (history.length > 0) {
 				var previousState = history.pop();
-				if (history.length == 0) {
+				if (history.length === 0) {
 					$('#undo').addClass('disabled');
 				}
 				undoBuffer.push(currentBoard);
@@ -140,7 +138,7 @@ var Sudoku = (function() {
 		if (!($('#redo').hasClass('disabled'))) {
 			if (undoBuffer.length > 0) {
 				var nextState = undoBuffer.pop();
-				if (undoBuffer.length == 0) {
+				if (undoBuffer.length === 0) {
 					$('#redo').addClass('disabled');
 				}
 				history.push(currentBoard);
@@ -200,8 +198,7 @@ var Sudoku = (function() {
 
 	/* Converts number of seconds to m:ss format */
 	function parseTime(seconds) {
-		return Math.floor(seconds / 60) + ":"
-				+ ((seconds % 60) < 10 ? "0" : "") + (seconds % 60);
+		return Math.floor(seconds / 60) + ":" + ((seconds % 60) < 10 ? "0" : "") + (seconds % 60);
 	}
 
 	function startTimer() {
@@ -224,11 +221,11 @@ var Sudoku = (function() {
 			$('#load').removeClass('disabled');
 			save();
 		});
-		if (!(getCookie("sudokuBoard"))) $('#load').addClass('disabled');
+		if (!(getCookie("sudokuBoard"))) { $('#load').addClass('disabled'); }
 		$('#load').unbind('click').click(function() {	load();	});
 		$('#pause').unbind('click').click(function() {	togglePauseState();		});
 		$(':not(#hint)').unbind('mouseup').mouseup(function() {
-			if ($('td input:focus').length == 0) {
+			if ($('td input:focus').length === 0) {
 				$('#hint').addClass('disabled');
 			}
 		});
@@ -268,11 +265,11 @@ var Sudoku = (function() {
 	
 	function reset() {
 		lastFocusId = ""; 
-		history = new Array();
+		history = [];
 		solvingTime = 0;
-		if (!(timerActive)) togglePauseState();
+		if (!(timerActive)) { togglePauseState(); }
 		timerActive = true;
-		undoBuffer = new Array(); 		
+		undoBuffer = [];	
 	}
 
 	/* PUBLIC METHODS */
@@ -307,7 +304,7 @@ var Sudoku = (function() {
 
 	/* Checks if current board state is same with proper solution. */
 	function isCorrect() {
-		return currentBoard == solvedBoard;
+		return currentBoard === solvedBoard;
 	}
 
 	/* Return public interface */
@@ -316,5 +313,5 @@ var Sudoku = (function() {
 		startTimer : startTimer,
 		loadBoard : loadBoard,
 		isCorrect : isCorrect
-	}
+	};
 })();
