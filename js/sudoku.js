@@ -168,15 +168,17 @@ var Sudoku = (function() {
 				"solvingTime" : solvingTime
 		};
 		setCookie("sudokuBoard", JSON.stringify(boardsJSON));
-		alert("game saved");
+		alert("Game saved!");
 	}
 
 	/* Loads saved game from cookie */
 	function load() {
 		var boardsJSON = JSON.parse(getCookie("sudokuBoard"));
 		showGame();
+		reset();
 		loadBoard(boardsJSON.initialBoard, boardsJSON.currentBoard, boardsJSON.solvedBoard, boardsJSON.solvingTime);
-		alert("game loaded");
+		bindEvents();
+		alert("Game loaded!");
 	}
 
 	
@@ -211,33 +213,21 @@ var Sudoku = (function() {
 	}
 	
 	function bindEvents() {
-		$('#checker').click(function() {
+		$('#checker').unbind('click').click(function() {
 			alert(isCorrect() ? config.successMessage : config.failureMessage);
 		});
-		$('#undo').addClass('disabled').click(function() {
-			undo();
-		});
-		$('#redo').addClass('disabled').click(function() {
-			redo();
-		});
-		$('#hint').addClass('disabled').mousedown(function() {
-			hint();
-		});
-		$('#back').click(function() {
-			showDiffChoice();
-		});
-		$('#save').click(function() {
+		$('#undo').addClass('disabled').unbind('click').click(function() {	undo();	});
+		$('#redo').addClass('disabled').unbind('click').click(function() {	redo();	});
+		$('#hint').addClass('disabled').unbind('mousedown').mousedown(function() {	hint();	});
+		$('#back').unbind('click').click(function() {	showDiffChoice();	});
+		$('#save').unbind('click').click(function() {
 			$('#load').removeClass('disabled');
 			save();
 		});
 		if (!(getCookie("sudokuBoard"))) $('#load').addClass('disabled');
-		$('#load').click(function() {
-			load();
-		});
-		$('#pause').click(function() {
-			togglePauseState();
-		});
-		$(':not(#hint)').mouseup(function() {
+		$('#load').unbind('click').click(function() {	load();	});
+		$('#pause').unbind('click').click(function() {	togglePauseState();		});
+		$(':not(#hint)').unbind('mouseup').mouseup(function() {
 			if ($('td input:focus').length == 0) {
 				$('#hint').addClass('disabled');
 			}
@@ -251,7 +241,7 @@ var Sudoku = (function() {
 			dimFields();
 			updateState($(this).parent().attr('id').slice(6));
 		});
-		$('td').hover(function() {
+		$('td').unbind('hover').hover(function() {
 			$(this).addClass('hover');
 		}, function() {
 			$(this).removeClass('hover');
@@ -267,13 +257,22 @@ var Sudoku = (function() {
 	}
 	
 	/* Opposite of showGame */
-	/* TODO: fix that shit... */
 	function showDiffChoice() {
 		$(config.diffChoiceContainer).slideDown();
-		// timerActive = false; 
+		timerActive = false; 
+		solvingTime = 0;
 		$(config.boardContainer).html(drawBoard()).slideUp();
 		$(config.buttonsContainer).hide();	
 		$(config.boardContainer).parent().hide();
+	}
+	
+	function reset() {
+		lastFocusId = ""; 
+		history = new Array();
+		solvingTime = 0;
+		if (!(timerActive)) togglePauseState();
+		timerActive = true;
+		undoBuffer = new Array(); 		
 	}
 
 	/* PUBLIC METHODS */
@@ -285,9 +284,9 @@ var Sudoku = (function() {
 		// display board, buttons, timer etc; hide difficulty choice panel
 		showGame();
 		
-		// start timer
-		startTimer();
- 
+		// set variables to default 
+		reset();
+		
 		// bind events
 		bindEvents();	
 	}
@@ -298,8 +297,8 @@ var Sudoku = (function() {
 		currentBoard = currentBoardDescription;
 		solvedBoard = solvedBoardDescription;
 
-		// if no initTime was provided, solvingTime defaults to 0
-		solvingTime = initTime || 0;
+		// if no initTime was provided, solvingTime remains unchanged
+		solvingTime = initTime || solvingTime;
 		$(config.timerContainer).html(parseTime(solvingTime));
 		
 		// fill board using given board description
@@ -314,6 +313,7 @@ var Sudoku = (function() {
 	/* Return public interface */
 	return {
 		init : init,
+		startTimer : startTimer,
 		loadBoard : loadBoard,
 		isCorrect : isCorrect
 	}

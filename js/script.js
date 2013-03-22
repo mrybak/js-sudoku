@@ -1,4 +1,7 @@
 $(function() {	
+	
+	Sudoku.startTimer();
+		
 	$('.start_game .btn').click(function() {		
 		// Initialize application
 		Sudoku.init();
