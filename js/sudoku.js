@@ -6,6 +6,7 @@ var Sudoku = (function() {
 
 	/* DEFAULT CONFIGURATION */
 	var config = {
+		diffChoiceContainer : ".start_game",
 		boardContainer : ".board",
 		buttonsContainer : ".buttons",
 		timerContainer : ".timer",
@@ -222,6 +223,9 @@ var Sudoku = (function() {
 		$('#hint').addClass('disabled').mousedown(function() {
 			hint();
 		});
+		$('#back').click(function() {
+			showDiffChoice();
+		});
 		$('#save').click(function() {
 			$('#load').removeClass('disabled');
 			save();
@@ -254,11 +258,22 @@ var Sudoku = (function() {
 		});
 	}
 	
-	/* Shows board, buttons and timer */
+	/* Shows board, buttons and timer and hides diff choice panel */
 	function showGame() {
+		$(config.diffChoiceContainer).slideUp();
 		$(config.boardContainer).parent().show();
-		$(config.boardContainer).show().html(drawBoard());
-		$(config.buttonsContainer).show();
+		$(config.boardContainer).html(drawBoard()).slideDown();
+		$(config.buttonsContainer).show();	
+	}
+	
+	/* Opposite of showGame */
+	/* TODO: fix that shit... */
+	function showDiffChoice() {
+		$(config.diffChoiceContainer).slideDown();
+		// timerActive = false; 
+		$(config.boardContainer).html(drawBoard()).slideUp();
+		$(config.buttonsContainer).hide();	
+		$(config.boardContainer).parent().hide();
 	}
 
 	/* PUBLIC METHODS */
@@ -267,7 +282,7 @@ var Sudoku = (function() {
 		// update configuration if custom configuration was supplied
 		$.extend(config, customConfig);
 		
-		// display board, buttons, timer etc.
+		// display board, buttons, timer etc; hide difficulty choice panel
 		showGame();
 		
 		// start timer

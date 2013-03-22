@@ -1,12 +1,13 @@
-$(function() {
-	// difficulty levels here? 
-	
-	$('.start_game .btn').click(function() {
-		alert( $(this).attr('difficulty') ); 
+$(function() {	
+	$('.start_game .btn').click(function() {		
+		// Initialize application
 		Sudoku.init();
-		var boardNumber = Math.floor(Math.random()*20);
-		Sudoku.loadBoard(boards.easy[boardNumber], boards.easy[boardNumber], solutions.easy[boardNumber]);
+		var diffLevel = $(this).attr('difficulty');
+		// Check number of boards for this difficulty level
+		var	numberOfBoards = boards[diffLevel].length;
+		// Choose number of board...
+		var	boardNumber = Math.floor(Math.random()*numberOfBoards);
+		// ...and load it.
+		Sudoku.loadBoard(boards[diffLevel][boardNumber], boards[diffLevel][boardNumber], solutions[diffLevel][boardNumber]);
 	});
-	
-
 });
