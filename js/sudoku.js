@@ -287,7 +287,7 @@ var Sudoku = (function() {
 		
 		// start timer
 		startTimer();
-
+ 
 		// bind events
 		bindEvents();	
 	}
