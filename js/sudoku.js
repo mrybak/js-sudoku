@@ -3,7 +3,8 @@
  * @author: kontakt@mrybak.pl
  */
 var Sudoku = (function() {
-
+	"use strict";
+	
 	/* DEFAULT CONFIGURATION */
 	var config = {
 		diffChoiceContainer : ".start_game",
@@ -66,7 +67,7 @@ var Sudoku = (function() {
 		if (fieldValue !== currentBoard[fieldIndex] && fieldValue !== "") {
 			history.push(currentBoard);
 			$('#undo').removeClass('disabled');
-			var updatedBoard = currentBoard.substr(0, fieldIndex) + fieldValue	+ currentBoard.substr(parseInt(fieldIndex) + 1);
+			var updatedBoard = currentBoard.substr(0, fieldIndex) + fieldValue	+ currentBoard.substr(parseInt(fieldIndex, 10) + 1);
 			currentBoard = updatedBoard;
 		}
 	}
